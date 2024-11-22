@@ -1,7 +1,134 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:paddingTop="20dp"
+    android:paddingBottom="20dp"
+    android:id="@+id/chat"
+    tools:context=".ChatActivity">
 
-</LinearLayout>
+    <ImageButton
+        android:id="@+id/btn_menu"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="12dp"
+        android:background="@drawable/img_menu"
+        app:layout_constraintTop_toTopOf="@id/chat"
+        app:layout_constraintStart_toStartOf="parent"/>
+    <View
+        android:id="@+id/line1"
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:layout_marginTop="55dp"
+        android:background="@color/gray5"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="match_parent"
+        android:layout_height="545dp"
+        android:fillViewport="true"
+        android:layout_marginHorizontal="20dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/line1">
+
+        <!-- 메시지 리스트 -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/chat_recycler_view"
+            android:layout_width="225dp"
+            android:layout_height="0dp"
+            android:background="@drawable/box_gray2"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="parent" />
+
+    </androidx.core.widget.NestedScrollView>
+
+    <View
+        android:id="@+id/line2"
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:layout_marginTop="600dp"
+        android:background="@color/gray5"
+        app:layout_constraintTop_toTopOf="parent"
+        />
+
+    <ImageButton
+        android:id="@+id/btn_home"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/img_home"
+        android:layout_marginEnd="80dp"
+        android:contentDescription="홈 버튼"
+        app:layout_constraintEnd_toStartOf="@id/btn_chat"
+        app:layout_constraintTop_toTopOf="@id/btn_chat"/>
+    <TextView
+        android:id="@+id/txt_home"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="home"
+        android:textSize="16dp"
+        android:fontFamily="@font/suit_medium"
+        android:textColor="@color/purp2"
+        android:layout_gravity="center"
+        android:inputType="text"
+        android:imeOptions="actionNext"
+        app:layout_constraintStart_toStartOf="@id/btn_home"
+        app:layout_constraintEnd_toEndOf="@id/btn_home"
+        app:layout_constraintTop_toTopOf="@id/txt_chat"/>
+
+
+    <ImageButton
+        android:id="@+id/btn_chat"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/img_chat_off"
+        android:layout_marginTop="20dp"
+        android:contentDescription="채팅 버튼"
+        app:layout_constraintStart_toStartOf="@id/line2"
+        app:layout_constraintEnd_toEndOf="@id/line2"
+        app:layout_constraintTop_toBottomOf="@id/line2"/>
+    <TextView
+        android:id="@+id/txt_chat"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="chat"
+        android:textSize="16dp"
+        android:fontFamily="@font/suit_medium"
+        android:textColor="@color/gray3"
+        android:layout_gravity="center"
+        android:inputType="text"
+        android:imeOptions="actionNext"
+        app:layout_constraintStart_toStartOf="@id/btn_chat"
+        app:layout_constraintEnd_toEndOf="@id/btn_chat"
+        app:layout_constraintTop_toBottomOf="@id/btn_chat"/>
+
+    <ImageButton
+        android:id="@+id/btn_my_page"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/img_mypage_off"
+        android:layout_marginStart="80dp"
+        android:contentDescription="마이페이지 버튼"
+        app:layout_constraintStart_toEndOf="@id/btn_chat"
+        app:layout_constraintTop_toTopOf="@id/btn_chat"/>
+    <TextView
+        android:id="@+id/txt_mypage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="my page"
+        android:textSize="16dp"
+        android:fontFamily="@font/suit_medium"
+        android:textColor="@color/gray3"
+        android:layout_gravity="center"
+        android:inputType="text"
+        android:imeOptions="actionNext"
+        app:layout_constraintStart_toStartOf="@id/btn_my_page"
+        app:layout_constraintEnd_toEndOf="@id/btn_my_page"
+        app:layout_constraintTop_toTopOf="@id/txt_chat"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

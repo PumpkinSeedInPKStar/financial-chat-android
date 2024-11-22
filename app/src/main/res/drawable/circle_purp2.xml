@@ -3,10 +3,5 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:shape="oval"
     tools:ignore="StateListReachable">
-    <gradient
-        android:angle="270"
-        android:endColor="@color/purp2"
-        android:startColor="@color/purp1"
-        android:type="linear"
-        />
+    <solid android:color="@color/purp2" />
 </shape>
