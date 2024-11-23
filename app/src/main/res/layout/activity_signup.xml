@@ -88,7 +88,7 @@
             android:id="@+id/signup_id_check"
             android:layout_width="20dp"
             android:layout_height="20dp"
-            android:background="@drawable/circle_purp2"
+            android:background="@drawable/circle_gray3"
             app:layout_constraintStart_toStartOf="@id/signup_id"
             app:layout_constraintTop_toBottomOf="@id/signup_id"
             />

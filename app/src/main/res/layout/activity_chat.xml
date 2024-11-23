@@ -30,29 +30,65 @@
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scrollView"
         android:layout_width="match_parent"
-        android:layout_height="545dp"
+        android:layout_height="495dp"
         android:fillViewport="true"
         android:layout_marginHorizontal="20dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/line1">
+        app:layout_constraintTop_toBottomOf="@id/line1"
+        app:layout_constraintBottom_toTopOf="@id/bottom_layout">
 
         <!-- 메시지 리스트 -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/chat_recycler_view"
-            android:layout_width="225dp"
-            android:layout_height="0dp"
-            android:background="@drawable/box_gray2"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toTopOf="parent" />
-
+<!--        <androidx.recyclerview.widget.RecyclerView-->
+<!--            android:id="@+id/chat_recycler_view"-->
+<!--            android:layout_width="225dp"-->
+<!--            android:layout_height="0dp"-->
+<!--            android:background="@drawable/box_gray2"-->
+<!--            app:layout_constraintTop_toTopOf="parent"-->
+<!--            app:layout_constraintBottom_toTopOf="parent" />-->
     </androidx.core.widget.NestedScrollView>
+
+    <RelativeLayout
+        android:id="@+id/bottom_layout"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_alignParentBottom="true"
+        android:padding="8dp"
+        android:background="@drawable/box_gray5_stroke"
+        app:layout_constraintBottom_toBottomOf="@id/line2">
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/meeage_edit_text"
+            android:layout_centerInParent="true"
+            android:hint="Write here"
+            android:textSize="14dp"
+            android:fontFamily="@font/suit_medium"
+            android:textColor="@color/gray3"
+            android:layout_gravity="center"
+            android:inputType="text"
+            android:padding="12dp"
+            android:layout_toLeftOf="@id/send_btn"
+            android:background="@drawable/box_gray1"
+            />
+        <ImageButton
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:id="@+id/send_btn"
+            android:layout_alignParentEnd="true"
+            android:layout_centerInParent="true"
+            android:layout_marginStart="10dp"
+            android:padding="8dp"
+            android:src="@drawable/img_send"
+            android:background="?attr/selectableItemBackgroundBorderless"/>
+    </RelativeLayout>
 
     <View
         android:id="@+id/line2"
         android:layout_width="match_parent"
         android:layout_height="2dp"
-        android:layout_marginTop="600dp"
+        android:layout_marginTop="610dp"
         android:background="@color/gray5"
         app:layout_constraintTop_toTopOf="parent"
         />
@@ -87,7 +123,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@drawable/img_chat"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="15dp"
         android:contentDescription="채팅 버튼"
         app:layout_constraintStart_toStartOf="@id/line2"
         app:layout_constraintEnd_toEndOf="@id/line2"

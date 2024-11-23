@@ -1,4 +1,6 @@
 package com.example.financial_chat
 
-class MypageActivity {
+import androidx.appcompat.app.AppCompatActivity
+
+class MypageActivity : AppCompatActivity(){
 }
