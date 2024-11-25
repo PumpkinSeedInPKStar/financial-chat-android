@@ -13,9 +13,14 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.bson.Document
 import at.favre.lib.crypto.bcrypt.BCrypt
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
 
 class SignupActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySignupBinding // View Binding 객체 선언
+    private lateinit var auth: FirebaseAuth // Firebase Authentication
+    private lateinit var firestore: FirebaseFirestore // Firebase Firestore
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,32 +29,38 @@ class SignupActivity : AppCompatActivity() {
         binding = ActivitySignupBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // Firebase 초기화
+        auth = FirebaseAuth.getInstance()
+        firestore = FirebaseFirestore.getInstance()
+
         // 회원가입 버튼 클릭 이벤트
         binding.btnJoinUs.setOnClickListener {
             val name = binding.signupName.text.toString().trim()
             val email = binding.signupEmail.text.toString().trim()
             val userId = binding.signupId.text.toString().trim()
             val password = binding.signupPw.text.toString().trim()
+            val age = binding.signupAge.text.toString().trim()
+            val job = binding.signupJob.text.toString().trim()
+            val interest = binding.signupInterest.text.toString().trim()
+            val goal = binding.signupGoal.text.toString().trim()
 
-            if (name.isEmpty() || email.isEmpty() || userId.isEmpty() || password.isEmpty()) {
+            if (name.isEmpty() || email.isEmpty() || userId.isEmpty() || password.isEmpty() ||
+                age.isEmpty() || job.isEmpty() || interest.isEmpty() || goal.isEmpty()) {
                 Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
             // 백그라운드에서 회원가입 처리
             CoroutineScope(Dispatchers.IO).launch {
-                val hashedPassword = BCrypt.withDefaults().hashToString(12, password.toCharArray())
-                val isSuccess = registerUser(email, hashedPassword, name, userId)
+                val isIdAvailable = checkUserIdAvailability(userId)
                 withContext(Dispatchers.Main) {
-                    if (isSuccess) {
-                        Toast.makeText(this@SignupActivity, "Signup successful!", Toast.LENGTH_SHORT).show()
-                        val intent = Intent(this@SignupActivity, LoginActivity::class.java)
-                        startActivity(intent)
-                        finish()
-                    } else {
-                        Toast.makeText(this@SignupActivity, "User already exists or an error occurred.", Toast.LENGTH_SHORT).show()
+                    if (!isIdAvailable) {
+                        Toast.makeText(this@SignupActivity, "ID is already taken.", Toast.LENGTH_SHORT).show()
+                        return@withContext
                     }
                 }
+
+                registerUser(email, password, name, userId, age, job, interest, goal)
             }
         }
 
@@ -76,43 +87,76 @@ class SignupActivity : AppCompatActivity() {
     }
 
     // 회원가입 메서드
-    private fun registerUser(email: String, password: String, name: String, id: String): Boolean {
-        MongoClients.create("mongodb+srv://kjehy2001:kjhghqkr1024!@cluster0.mongodb.net/users?retryWrites=true&w=majority").use { client ->
-            val database = client.getDatabase("users")
-            val collection: MongoCollection<Document> = database.getCollection("users")
-            return try {
-                val existingEmail = collection.find(Document("email", email)).first()
-                if (existingEmail != null) return false
+    private fun registerUser(
+        email: String,
+        password: String,
+        name: String,
+        userId: String,
+        age: String,
+        job: String,
+        interest: String,
+        goal: String
+    ) {
+        auth.createUserWithEmailAndPassword(email, password)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val userId = auth.currentUser?.uid
+                    if (userId != null) {
+                        val userMap = hashMapOf(
+                            "name" to name,
+                            "email" to email,
+                            "id" to userId,
+                            "age" to age,
+                            "job" to job,
+                            "interest" to interest,
+                            "goal" to goal
+                        )
 
-                val existingId = collection.find(Document("id", id)).first()
-                if (existingId != null) return false
-
-                val newUser = Document("email", email)
-                    .append("password", password)
-                    .append("name", name)
-                    .append("id", id)
-
-                collection.insertOne(newUser)
-                true
-            } catch (e: Exception) {
-                e.printStackTrace()
-                false
+                        firestore.collection("users").document(userId)
+                            .set(userMap)
+                            .addOnSuccessListener {
+                                Toast.makeText(this, "Signup successful!", Toast.LENGTH_SHORT)
+                                    .show()
+                                val intent = Intent(this, LoginActivity::class.java)
+                                startActivity(intent)
+                                finish()
+                            }
+                            .addOnFailureListener { e ->
+                                Toast.makeText(
+                                    this,
+                                    "Error saving user: ${e.message}",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                    } else {
+                        Toast.makeText(
+                            this,
+                            "Error creating user: User ID is null.",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                } else {
+                    Toast.makeText(
+                        this,
+                        "Signup failed: ${task.exception?.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
-        }
     }
 
     // ID 중복 체크 메서드
-    private fun checkUserIdAvailability(userId: String): Boolean {
-        MongoClients.create("your_mongodb_connection_string").use { client ->
-            val database = client.getDatabase("financial_chat")
-            val collection: MongoCollection<Document> = database.getCollection("users")
-            return try {
-                val existingUser = collection.find(Document("id", userId)).first()
-                existingUser == null
-            } catch (e: Exception) {
-                e.printStackTrace()
-                false
-            }
+    private suspend fun checkUserIdAvailability(userId: String): Boolean {
+        return try {
+            val snapshot = firestore.collection("users")
+                .whereEqualTo("id", userId)
+                .get()
+                .await()
+
+            snapshot.isEmpty // true면 사용 가능, false면 이미 존재
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
         }
     }
 }

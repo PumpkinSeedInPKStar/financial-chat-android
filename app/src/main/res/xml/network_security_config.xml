@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">your-firebase-url.firebaseio.com</domain>
+    </domain-config>
+</network-security-config>
+
+<!--<network-security-config>-->
+<!--    <domain-config cleartextTrafficPermitted="true">-->
+<!--        <domain includeSubdomains="true">cluster0-shard-00-00.4ab2a.mongodb.net</domain>-->
+<!--    </domain-config>-->
+<!--</network-security-config>-->
+
+    <!--<?xml version="1.0" encoding="utf-8"?>-->
+    <!--<network-security-config>-->
+    <!--    <domain-config cleartextTrafficPermitted="true">-->
+    <!--        <domain includeSubdomains="true">cluster0.mongodb.net</domain>-->
+    <!--    </domain-config>-->
+    <!--</network-security-config>-->

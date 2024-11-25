@@ -12,10 +12,16 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.bson.Document
 import at.favre.lib.crypto.bcrypt.BCrypt
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
 
 class LoginActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLoginBinding // View Binding 객체 선언
     private lateinit var sessionManager: SessionManager // 로그인 상태 관리 객체
+    private lateinit var auth: FirebaseAuth // Firebase Authentication
+    private lateinit var firestore: FirebaseFirestore // Firebase Firestore
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -23,6 +29,10 @@ class LoginActivity : AppCompatActivity() {
         // View Binding 초기화
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // Firebase 초기화
+        auth = FirebaseAuth.getInstance()
+        firestore = FirebaseFirestore.getInstance()
 
         // SessionManager 초기화
         sessionManager = SessionManager(this)
@@ -37,23 +47,8 @@ class LoginActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // 백그라운드에서 로그인 처리
-            CoroutineScope(Dispatchers.IO).launch {
-                val user = loginUser(email, password)
-                withContext(Dispatchers.Main) {
-                    if (user != null) {
-                        // 로그인 성공, 세션 저장
-                        sessionManager.saveUserSession(user.getString("email"), user.getString("id"))
-                        Toast.makeText(this@LoginActivity, "Login successful!", Toast.LENGTH_SHORT).show()
-                        // 메인 화면으로 이동
-                        val intent = Intent(this@LoginActivity, MainActivity::class.java)
-                        startActivity(intent)
-                        finish()
-                    } else {
-                        Toast.makeText(this@LoginActivity, "Invalid email or password.", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            }
+            // Firebase Authentication으로 로그인
+            loginUser(email, password)
         }
 
         // "Join Us" 버튼 클릭 이벤트
@@ -70,26 +65,65 @@ class LoginActivity : AppCompatActivity() {
     }
 
     // 로그인 메서드
-    private fun loginUser(email: String, password: String): Document? {
-        MongoClients.create("your_mongodb_connection_string").use { client ->
-            val database = client.getDatabase("users") // 데이터베이스 이름
-            val collection = database.getCollection("users") // 컬렉션 이름
+    private fun loginUser(email: String, password: String) {
+        auth.signInWithEmailAndPassword(email, password)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    // Firebase Firestore에서 사용자 정보 가져오기
+                    val userId = auth.currentUser?.uid
+                    if (userId != null) {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            val user = fetchUserDetails(userId)
+                            withContext(Dispatchers.Main) {
+                                if (user != null) {
+                                    // 세션 저장
+                                    sessionManager.saveUserSession(user["email"] as String, userId)
+                                    Toast.makeText(
+                                        this@LoginActivity,
+                                        "Login successful!",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
 
-            return try {
-                // 사용자 검색
-                val user = collection.find(Document("email", email)).first()
-                if (user != null) {
-                    val storedHashedPassword = user.getString("password")
-                    // 비밀번호 검증
-                    val result = BCrypt.verifyer().verify(password.toCharArray(), storedHashedPassword)
-                    if (result.verified) user else null
+                                    // 메인 화면으로 이동
+                                    val intent =
+                                        Intent(this@LoginActivity, HomeActivity::class.java)
+                                    startActivity(intent)
+                                    finish()
+                                } else {
+                                    Toast.makeText(
+                                        this@LoginActivity,
+                                        "User data not found.",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            }
+                        }
+                    } else {
+                        Toast.makeText(this, "Login failed: User ID not found.", Toast.LENGTH_SHORT)
+                            .show()
+                    }
                 } else {
-                    null // 사용자 없음
+                    Toast.makeText(
+                        this,
+                        "Login failed: ${task.exception?.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
+            }
+    }
+
+    // Firestore에서 사용자 정보 가져오기
+    private suspend fun fetchUserDetails(userId: String): Map<String, Any>? {
+        return try {
+            val document = firestore.collection("users").document(userId).get().await()
+            if (document.exists()) {
+                document.data
+            } else {
                 null
             }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
         }
     }
 }

@@ -5,29 +5,37 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.financial_chat.databinding.ActivityMainBinding
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.mongodb.client.MongoClients
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import org.bson.Document
 
 class HomeActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var sessionManager: SessionManager
+    private lateinit var auth: FirebaseAuth
+    private lateinit var firestore: FirebaseFirestore
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // Firebase 초기화
+        auth = FirebaseAuth.getInstance()
+        firestore = FirebaseFirestore.getInstance()
+
         // SessionManager 초기화
         sessionManager = SessionManager(this)
 
         // 로그인 상태 확인
-        val userId = sessionManager.getUserId()
-        val userEmail = sessionManager.getUserEmail()
-        if (userId == null || userEmail == null) {
+        val userId = auth.currentUser?.uid
+        if (userId == null) {
             // 로그인 상태가 아니면 로그인 화면으로 이동
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
@@ -40,7 +48,7 @@ class HomeActivity : AppCompatActivity() {
             withContext(Dispatchers.Main) {
                 if (userData != null) {
                     // 유저 이름 표시
-                    binding.txtUserName.text = userData.getString("name")
+                    binding.txtUserName.text = userData["name"] as String?
                 } else {
                     Toast.makeText(this@HomeActivity, "Failed to load user data.", Toast.LENGTH_SHORT).show()
                 }
@@ -78,18 +86,18 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
-    // MongoDB에서 유저 데이터 가져오기
-    private fun getUserData(userId: String): Document? {
-        MongoClients.create("your_mongodb_connection_string").use { client ->
-            val database = client.getDatabase("users")
-            val collection = database.getCollection("users")
-
-            return try {
-                collection.find(Document("id", userId)).first()
-            } catch (e: Exception) {
-                e.printStackTrace()
+    // Firestore에서 유저 데이터 가져오기
+    private suspend fun getUserData(userId: String): Map<String, Any>? {
+        return try {
+            val document = firestore.collection("users").document(userId).get().await()
+            if (document.exists()) {
+                document.data
+            } else {
                 null
             }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
         }
     }
 }

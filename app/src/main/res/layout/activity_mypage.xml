@@ -133,56 +133,10 @@
                 app:layout_constraintBottom_toBottomOf="@id/mypage_email"/>
 
             <TextView
-                android:id="@+id/mypage_id"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginTop="16dp"
-                android:layout_marginStart="6dp"
-                android:layout_marginEnd="6dp"
-                android:paddingStart="3.5dp"
-                android:text="ID:"
-                android:textSize="16dp"
-                android:fontFamily="@font/suit_semibold"
-                android:textColor="@color/gray4"
-                android:layout_gravity="center"
-                android:gravity="center_vertical"
-                android:inputType="text"
-                android:imeOptions="actionNext"
-                app:layout_constraintEnd_toEndOf="@id/mypage_email"
-                app:layout_constraintStart_toStartOf="@id/mypage_email"
-                app:layout_constraintTop_toBottomOf="@id/mypage_email"/>
-            <View
-                android:id="@+id/mypage_id_line"
-                android:layout_width="352dp"
-                android:layout_height="1dp"
-                android:background="@color/gray4"
-                android:layout_marginTop="40dp"
-                app:layout_constraintEnd_toEndOf="@id/mypage_id"
-                app:layout_constraintStart_toStartOf="@id/mypage_id"
-                app:layout_constraintTop_toTopOf="@id/mypage_id"/>
-            <TextView
-                android:id="@+id/txt_mypage_id"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginStart="6dp"
-                android:layout_marginEnd="6dp"
-                android:paddingStart="64dp"
-                android:text="userID"
-                android:textSize="24dp"
-                android:fontFamily="@font/suit_medium"
-                android:textColor="@color/font"
-                android:layout_gravity="center"
-                android:gravity="center_vertical"
-                app:layout_constraintEnd_toEndOf="@id/mypage_id"
-                app:layout_constraintStart_toStartOf="@id/mypage_id"
-                app:layout_constraintTop_toTopOf="@id/mypage_id"
-                app:layout_constraintBottom_toBottomOf="@id/mypage_id"/>
-
-            <TextView
                 android:id="@+id/age"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
-                android:layout_marginTop="36dp"
+                android:layout_marginTop="60dp"
                 android:layout_marginStart="6dp"
                 android:layout_marginEnd="6dp"
                 android:text="나이:"
@@ -193,9 +147,9 @@
                 android:gravity="center_vertical"
                 android:imeOptions="actionDone"
                 android:background="@drawable/box_gray1"
-                app:layout_constraintEnd_toEndOf="@id/mypage_id_line"
-                app:layout_constraintStart_toStartOf="@id/mypage_id_line"
-                app:layout_constraintTop_toBottomOf="@id/mypage_id_line"/>
+                app:layout_constraintEnd_toEndOf="@id/mypage_email_line"
+                app:layout_constraintStart_toStartOf="@id/mypage_email_line"
+                app:layout_constraintTop_toBottomOf="@id/mypage_email_line"/>
             <TextView
                 android:id="@+id/txt_age"
                 android:layout_width="wrap_content"

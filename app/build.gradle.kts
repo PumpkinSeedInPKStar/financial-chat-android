@@ -1,6 +1,13 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+    id("com.google.gms.google-services")
+}
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(23)) // Java 17로 설정
+    }
 }
 
 android {
@@ -30,14 +37,16 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "17"
     }
     buildFeatures {
         compose = true
+        viewBinding = true
+        dataBinding = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
@@ -45,6 +54,8 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "META-INF/native-image/native-image.properties"
+            excludes += "META-INF/native-image/reflect-config.json" // 추가
         }
     }
     buildFeatures {
@@ -65,9 +76,28 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.recyclerview)
-    implementation("org.mongodb:mongodb-driver-sync:4.7.0")
+
+//    implementation("org.mongodb:mongodb-driver-sync:4.7.0")
+//    implementation("org.mongodb:mongodb-driver-reactivestreams:4.7.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
+    implementation("org.mongodb:bson-kotlinx:5.2.0")
+    implementation("org.litote.kmongo:kmongo-serialization:4.10.0")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.9.20")
+    implementation("org.mongodb:mongodb-driver-kotlin-sync:5.2.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0") // 최신 버전으로 설정
+    implementation("org.mongodb:mongodb-driver-legacy:4.7.0")
     implementation("at.favre.lib:bcrypt:0.9.0")
+    implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation("org.slf4j:slf4j-simple:1.7.36")
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore.ktx)
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
+
+    implementation(platform("com.google.firebase:firebase-bom:33.6.0"))
+    implementation("com.google.firebase:firebase-analytics")
+
     implementation(libs.androidx.appcompat)
+    implementation(libs.material)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -75,4 +105,5 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    implementation(kotlin("script-runtime"))
 }
