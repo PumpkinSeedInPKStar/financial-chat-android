@@ -96,6 +96,12 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.6.0"))
     implementation("com.google.firebase:firebase-analytics")
 
+//    implementation("org.pytorch:pytorch_android_lite:1.11.0")
+//    implementation("org.pytorch:pytorch_android_torchvision_lite:1.11.0")
+
+    implementation("org.tensorflow:tensorflow-lite:2.9.0")
+    implementation("org.tensorflow:tensorflow-lite-support:0.3.1")
+
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     testImplementation(libs.junit)

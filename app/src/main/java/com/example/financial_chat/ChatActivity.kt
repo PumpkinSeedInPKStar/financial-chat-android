@@ -23,6 +23,7 @@ import org.bson.Document
 class ChatActivity : AppCompatActivity(){
     private lateinit var binding: ActivityChat2Binding
     private lateinit var chatAdapter: ChatAdapter
+    private lateinit var chatModel: ChatModel
     private lateinit var chatRoomAdapter: ChatRoomAdapter
 
     private lateinit var sessionManager: SessionManager
@@ -37,6 +38,17 @@ class ChatActivity : AppCompatActivity(){
         super.onCreate(savedInstanceState)
         binding = ActivityChat2Binding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // Lite Interpreter 모델 로드
+        chatModel = ChatModel("model.ptl") // 모델 파일명
+        try {
+            chatModel.loadModel(this)
+        } catch (e: Exception) {
+            Log.e("ChatActivity", "Model loading failed: ${e.message}")
+            Toast.makeText(this, "모델 로드 실패. 앱을 다시 시작해주세요.", Toast.LENGTH_SHORT).show()
+            finish()
+            return
+        }
 
         // Firebase 초기화
         auth = FirebaseAuth.getInstance()
@@ -152,8 +164,12 @@ class ChatActivity : AppCompatActivity(){
                 try {
                     // Firebase Firestore에 메시지 저장
                     saveMessageToFirebase(roomId, newMessage)
+
                     // 챗봇 응답 추가
-                    val botReply = getBotReply(message)
+                    // val botReply = getBotReply(message)
+
+                    // Lite Interpreter 모델로 챗봇 응답 생성
+                    val botReply = chatModel.predict(message)
                     val botMessage = ChatMessage("bot", botReply, System.currentTimeMillis().toString())
                     saveMessageToFirebase(roomId, botMessage)
 
@@ -220,7 +236,9 @@ class ChatActivity : AppCompatActivity(){
         }
     }
 
+    /* // 더이상 필요 없음
     private fun getBotReply(userMessage: String): String {
         return "You said: $userMessage"
     }
+     */
 }
