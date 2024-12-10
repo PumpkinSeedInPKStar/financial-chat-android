@@ -5,13 +5,13 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.financial_chat.databinding.ActivityLoginBinding
-import com.mongodb.client.MongoClients
+//import com.mongodb.client.MongoClients
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.bson.Document
-import at.favre.lib.crypto.bcrypt.BCrypt
+//import org.bson.Document
+//import at.favre.lib.crypto.bcrypt.BCrypt
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await

@@ -7,13 +7,13 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.financial_chat.databinding.ActivityMainBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.mongodb.client.MongoClients
+//import com.mongodb.client.MongoClients
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
-import org.bson.Document
+//import org.bson.Document
 
 class HomeActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding

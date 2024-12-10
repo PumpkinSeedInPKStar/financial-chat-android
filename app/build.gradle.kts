@@ -77,30 +77,32 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.recyclerview)
 
-//    implementation("org.mongodb:mongodb-driver-sync:4.7.0")
-//    implementation("org.mongodb:mongodb-driver-reactivestreams:4.7.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
-    implementation("org.mongodb:bson-kotlinx:5.2.0")
-    implementation("org.litote.kmongo:kmongo-serialization:4.10.0")
+//    implementation("org.mongodb:bson-kotlinx:5.2.0")
+//    implementation("org.litote.kmongo:kmongo-serialization:4.10.0")
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.9.20")
-    implementation("org.mongodb:mongodb-driver-kotlin-sync:5.2.0")
+//    implementation("org.mongodb:mongodb-driver-kotlin-sync:5.2.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0") // 최신 버전으로 설정
-    implementation("org.mongodb:mongodb-driver-legacy:4.7.0")
+//    implementation("org.mongodb:mongodb-driver-legacy:4.7.0")
     implementation("at.favre.lib:bcrypt:0.9.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("org.slf4j:slf4j-simple:1.7.36")
-    implementation(libs.firebase.auth)
-    implementation(libs.firebase.firestore.ktx)
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
 
+    // Firebase
     implementation(platform("com.google.firebase:firebase-bom:33.6.0"))
     implementation("com.google.firebase:firebase-analytics")
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore.ktx)
 
-//    implementation("org.pytorch:pytorch_android_lite:1.11.0")
-//    implementation("org.pytorch:pytorch_android_torchvision_lite:1.11.0")
+    // Retrofit
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
 
-    implementation("org.tensorflow:tensorflow-lite:2.9.0")
-    implementation("org.tensorflow:tensorflow-lite-support:0.3.1")
+
+//    implementation("org.tensorflow:tensorflow-lite:2.9.0")
+//    implementation("org.tensorflow:tensorflow-lite-support:0.3.1")
+//    implementation("com.github.google:sentencepiece:0.1.94")
 
     implementation(libs.androidx.appcompat)
     implementation(libs.material)

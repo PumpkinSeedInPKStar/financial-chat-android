@@ -2,137 +2,222 @@ package com.example.financial_chat
 
 import android.content.Context
 import android.util.Log
-import org.tensorflow.lite.Interpreter
+import org.json.JSONObject
+//import org.tensorflow.lite.Interpreter
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.charset.StandardCharsets
 
-class ChatModel(private val modelPath: String) {
+/*
+class ChatModel(context: Context, modelFile: String, tokenizerFile: String, configFile: String) {
+    private val interpreter: Interpreter
+    private val tokenizer: CustomTokenizer
 
-    private lateinit var interpreter: Interpreter
-    private lateinit var inputBuffer: ByteBuffer
-    private lateinit var outputBuffer: ByteBuffer
-    private val maxInputLength = 1024  // 최대 입력 길이
-    private val maxOutputLength = 512 // 최대 출력 길이
-    private val inputSize = 512       // 모델의 입력 크기
+    init {
+        val modelStream = context.assets.open(modelFile)
+        val modelBuffer = ByteBuffer.allocateDirect(modelStream.available())
+        modelBuffer.order(ByteOrder.nativeOrder())
+        modelStream.read(modelBuffer.array())
+        interpreter = Interpreter(modelBuffer)
 
-    // 모델 로드
-    fun loadModel(context: Context) {
-        try {
-            val assetFileDescriptor = context.assets.openFd(modelPath)
-            val inputStream = assetFileDescriptor.createInputStream()
-            val modelBuffer = ByteBuffer.allocateDirect(assetFileDescriptor.declaredLength.toInt())
-            inputStream.read(modelBuffer.array())
-            modelBuffer.order(ByteOrder.nativeOrder())
-            inputStream.close()
-
-            interpreter = Interpreter(modelBuffer)
-            Log.d("ChatModel", "Model loaded successfully.")
-        } catch (e: Exception) {
-            Log.e("ChatModel", "Error loading model: ${e.message}")
-            throw RuntimeException("모델 로드 실패: ${e.message}")
-        }
-
-        // 입력 및 출력 버퍼 초기화
-        inputBuffer = ByteBuffer.allocateDirect(maxInputLength * 4).apply {
-            order(ByteOrder.nativeOrder())
-        }
-        outputBuffer = ByteBuffer.allocateDirect(maxOutputLength * 4).apply {
-            order(ByteOrder.nativeOrder())
-        }
+        tokenizer = CustomTokenizer(context, tokenizerFile, configFile)
     }
 
-    // 입력 텍스트 처리
-    private fun preprocessInput(inputText: String): ByteBuffer {
-        inputBuffer.clear()
-        val inputBytes = inputText.toByteArray(StandardCharsets.UTF_8)
-
-        // 입력 데이터를 ByteBuffer로 변환
-        for (i in inputBytes.indices) {
-            if (i >= inputSize) break // 최대 입력 크기를 초과하지 않도록 제한
-            inputBuffer.putInt(inputBytes[i].toInt())
-        }
-
-        // 패딩 처리
-        for (i in inputBytes.size until inputSize) {
-            inputBuffer.putInt(0)
-        }
-
-        return inputBuffer
-    }
-
-    // 출력 데이터 후처리
-    private fun postprocessOutput(outputBuffer: ByteBuffer): String {
-        outputBuffer.rewind()
-        val outputBytes = ByteArray(maxOutputLength)
-        for (i in outputBytes.indices) {
-            val value = outputBuffer.get().toInt()
-            if (value == 0) break // 패딩 값(0)에서 종료
-            outputBytes[i] = value.toByte()
-        }
-        return String(outputBytes, StandardCharsets.UTF_8).trim()
-    }
-
-    // 예측 수행
     fun predict(inputText: String): String {
-        val preprocessedInput = preprocessInput(inputText)
+        // Tokenize input
+        val inputIds = tokenizer.encode(inputText)
+        val inputBuffer = ByteBuffer.allocateDirect(inputIds.size * 4).order(ByteOrder.nativeOrder())
+        inputIds.forEach { inputBuffer.putInt(it) }
 
-        // 출력 버퍼 초기화
-        outputBuffer.clear()
+        // Prepare output buffer
+        val outputBuffer = ByteBuffer.allocateDirect(1024 * 4).order(ByteOrder.nativeOrder())
 
-        // 모델 실행
-        interpreter.run(preprocessedInput, outputBuffer)
+        // Run model
+        interpreter.run(inputBuffer, outputBuffer)
 
-        // 후처리하여 출력 결과 반환
-        return postprocessOutput(outputBuffer)
-    }
-
-    // Function Calling 처리
-    fun processFunctionCall(inputText: String): String {
-        val response = predict(inputText)
-
-        // Function Calling 여부 확인
-        if (response.contains("Function Call:")) {
-            val functionName = extractFunctionName(response)
-            val parameters = extractFunctionParameters(response)
-
-            // Function Calling 수행
-            val result = FunctionCalling.callFunction(functionName, parameters)
-            return "Function Result: $result"
-        }
-
-        // Function Calling이 아닌 경우 모델 응답 그대로 반환
-        return response
-    }
-
-    // Function Name 추출
-    private fun extractFunctionName(response: String): String {
-        val regex = Regex("Function Call: ([a-zA-Z_]+)")
-        val matchResult = regex.find(response)
-        return matchResult?.groupValues?.get(1) ?: throw IllegalArgumentException("Function name not found in response.")
-    }
-
-    // Function Parameters 추출
-    private fun extractFunctionParameters(response: String): Map<String, Any> {
-        val regex = Regex("Parameters: \\{(.*?)}")
-        val matchResult = regex.find(response)
-        val paramString = matchResult?.groupValues?.get(1) ?: return emptyMap()
-
-        return paramString.split(",").map { param ->
-            val (key, value) = param.split(":").map { it.trim() }
-            key to parseParameterValue(value)
-        }.toMap()
-    }
-
-    // Parameter 값 파싱
-    private fun parseParameterValue(value: String): Any {
-        return when {
-            value.startsWith("\"") && value.endsWith("\"") -> value.trim('"')
-            value.contains(".") -> value.toDoubleOrNull() ?: value
-            else -> value.toIntOrNull() ?: value
-        }
+        // Decode output
+        outputBuffer.rewind()
+        val outputIds = IntArray(1024) { outputBuffer.getInt() }
+        return tokenizer.decode(outputIds.filter { it != 0 }.toIntArray())
     }
 }
+ */
+
+/*
+class ChatModel(context: Context, modelFile: String, tokenizerFile: String) {
+    private val interpreter: Interpreter
+    private val tokenizer: Tokenizer
+
+    init {
+        // 모델 초기화
+        val modelBuffer = context.assets.open(modelFile).use { it.readBytes() }.let {
+            ByteBuffer.allocateDirect(it.size).apply {
+                order(ByteOrder.nativeOrder())
+                put(it)
+            }
+        }
+        interpreter = Interpreter(modelBuffer)
+
+        // 토크나이저 초기화
+        val tokenizerJson = String(context.assets.open(tokenizerFile).readBytes())
+        tokenizer = Tokenizer(JSONObject(tokenizerJson))
+    }
+
+    fun predict(inputText: String): String {
+        // 입력 텍스트를 토크나이저를 통해 변환
+        val inputIds = tokenizer.encode(inputText)
+        val inputBuffer = ByteBuffer.allocateDirect(inputIds.size * 4).apply {
+            order(ByteOrder.nativeOrder())
+            for (id in inputIds) {
+                putInt(id)
+            }
+        }
+
+        // 결과를 저장할 버퍼
+        val outputBuffer = ByteBuffer.allocateDirect(1024 * 4).apply {
+            order(ByteOrder.nativeOrder())
+        }
+
+        // 모델 실행
+        interpreter.run(inputBuffer, outputBuffer)
+
+        // 출력 디코딩
+        outputBuffer.rewind()
+        val outputIds = IntArray(1024) { outputBuffer.int }
+        return tokenizer.decode(outputIds)
+    }
+}
+ */
+
+
+//class ChatModel(private val modelPath: String) {
+//
+//    private lateinit var interpreter: Interpreter
+//    private lateinit var inputBuffer: ByteBuffer
+//    private lateinit var outputBuffer: ByteBuffer
+//    private val maxInputLength = 1024  // 최대 입력 길이
+//    private val maxOutputLength = 512 // 최대 출력 길이
+//    private val inputSize = 512       // 모델의 입력 크기
+//
+//    // 모델 로드
+//    fun loadModel(context: Context) {
+//        try {
+//            val assetFileDescriptor = context.assets.openFd(modelPath)
+//            val inputStream = assetFileDescriptor.createInputStream()
+//            val modelBuffer = ByteBuffer.allocateDirect(assetFileDescriptor.declaredLength.toInt())
+//            inputStream.read(modelBuffer.array())
+//            modelBuffer.order(ByteOrder.nativeOrder())
+//            inputStream.close()
+//
+//            interpreter = Interpreter(modelBuffer)
+//            Log.d("ChatModel", "Model loaded successfully.")
+//        } catch (e: Exception) {
+//            Log.e("ChatModel", "Error loading model: ${e.message}")
+//            throw RuntimeException("모델 로드 실패: ${e.message}")
+//        }
+//
+//        // 입력 및 출력 버퍼 초기화
+//        inputBuffer = ByteBuffer.allocateDirect(maxInputLength * 4).apply {
+//            order(ByteOrder.nativeOrder())
+//        }
+//        outputBuffer = ByteBuffer.allocateDirect(maxOutputLength * 4).apply {
+//            order(ByteOrder.nativeOrder())
+//        }
+//    }
+//
+//    // 입력 텍스트 처리
+//    private fun preprocessInput(inputText: String): ByteBuffer {
+//        inputBuffer.clear()
+//        val inputBytes = inputText.toByteArray(StandardCharsets.UTF_8)
+//
+//        // 입력 데이터를 ByteBuffer로 변환
+//        for (i in inputBytes.indices) {
+//            if (i >= inputSize) break // 최대 입력 크기를 초과하지 않도록 제한
+//            inputBuffer.putInt(inputBytes[i].toInt())
+//        }
+//
+//        // 패딩 처리
+//        for (i in inputBytes.size until inputSize) {
+//            inputBuffer.putInt(0)
+//        }
+//
+//        return inputBuffer
+//    }
+//
+//    // 출력 데이터 후처리
+//    private fun postprocessOutput(outputBuffer: ByteBuffer): String {
+//        outputBuffer.rewind()
+//        val outputBytes = ByteArray(maxOutputLength)
+//        for (i in outputBytes.indices) {
+//            val value = outputBuffer.get().toInt()
+//            if (value == 0) break // 패딩 값(0)에서 종료
+//            outputBytes[i] = value.toByte()
+//        }
+//        return String(outputBytes, StandardCharsets.UTF_8).trim()
+//    }
+//
+//    // 예측 수행
+//    fun predict(inputText: String): String {
+//        val preprocessedInput = preprocessInput(inputText)
+//
+//        // 출력 버퍼 초기화
+//        outputBuffer.clear()
+//
+//        // 모델 실행
+//        interpreter.run(preprocessedInput, outputBuffer)
+//
+//        // 후처리하여 출력 결과 반환
+//        return postprocessOutput(outputBuffer)
+//    }
+//
+//    // Function Calling 처리
+//    fun processFunctionCall(inputText: String): String {
+//        val response = predict(inputText)
+//
+//        // Function Calling 여부 확인
+//        if (response.contains("Function Call:")) {
+//            val functionName = extractFunctionName(response)
+//            val parameters = extractFunctionParameters(response)
+//
+//            // Function Calling 수행
+//            val result = FunctionCalling.callFunction(functionName, parameters)
+//            return "Function Result: $result"
+//        }
+//
+//        // Function Calling이 아닌 경우 모델 응답 그대로 반환
+//        return response
+//    }
+//
+//    // Function Name 추출
+//    private fun extractFunctionName(response: String): String {
+//        val regex = Regex("Function Call: ([a-zA-Z_]+)")
+//        val matchResult = regex.find(response)
+//        return matchResult?.groupValues?.get(1) ?: throw IllegalArgumentException("Function name not found in response.")
+//    }
+//
+//    // Function Parameters 추출
+//    private fun extractFunctionParameters(response: String): Map<String, Any> {
+//        val regex = Regex("Parameters: \\{(.*?)}")
+//        val matchResult = regex.find(response)
+//        val paramString = matchResult?.groupValues?.get(1) ?: return emptyMap()
+//
+//        return paramString.split(",").map { param ->
+//            val (key, value) = param.split(":").map { it.trim() }
+//            key to parseParameterValue(value)
+//        }.toMap()
+//    }
+//
+//    // Parameter 값 파싱
+//    private fun parseParameterValue(value: String): Any {
+//        return when {
+//            value.startsWith("\"") && value.endsWith("\"") -> value.trim('"')
+//            value.contains(".") -> value.toDoubleOrNull() ?: value
+//            else -> value.toIntOrNull() ?: value
+//        }
+//    }
+//}
+
+
 
 /*
 class ChatModel(private val assetFileName: String) {
