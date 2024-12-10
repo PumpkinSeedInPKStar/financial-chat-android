@@ -19,12 +19,6 @@ class ChatAdapter(private var messages: List<ChatMessage>) :
         return MessageViewHolder(view, viewType)
     }
 
-    // 메시지 업데이트
-    fun updateMessages(newMessages: List<ChatMessage>) {
-        messages = newMessages
-        notifyDataSetChanged()
-    }
-
     override fun onBindViewHolder(holder: MessageViewHolder, position: Int) {
         holder.bind(messages[position])
     }
@@ -40,6 +34,20 @@ class ChatAdapter(private var messages: List<ChatMessage>) :
         notifyItemInserted(messages.size - 1)
     }
 
+    fun updateMessage(newMessages: List<ChatMessage>) {
+        messages = newMessages
+        notifyDataSetChanged()
+    }
+
+    fun updateLastBotMessage(message: ChatMessage) {
+        if (messages.isNotEmpty() && messages.last().sender == "bot") {
+            messages = messages.dropLast(1) + message
+            notifyItemChanged(messages.size - 1)
+        } else {
+            addMessage(message)
+        }
+    }
+
     class MessageViewHolder(itemView: View, viewType: Int) : RecyclerView.ViewHolder(itemView) {
         private val messageText: TextView = if (viewType == VIEW_TYPE_USER) {
             itemView.findViewById(R.id.user_message)
@@ -51,6 +59,26 @@ class ChatAdapter(private var messages: List<ChatMessage>) :
             messageText.text = message.message
         }
     }
+
+    /* // 1st (24.12.10) 이전 버전
+    // 메시지 업데이트
+    fun updateMessages(newMessages: List<ChatMessage>) {
+        messages = newMessages
+        notifyDataSetChanged()
+    }
+
+    class MessageViewHolder(itemView: View, viewType: Int) : RecyclerView.ViewHolder(itemView) {
+        private val messageText: TextView = if (viewType == VIEW_TYPE_USER) {
+            itemView.findViewById(R.id.user_message)
+        } else {
+            itemView.findViewById(R.id.bot_message)
+        }
+
+        fun bind(message: ChatMessage) {
+            messageText.text = message.message
+        }
+    }
+     */
 
     companion object {
         const val VIEW_TYPE_USER = 0

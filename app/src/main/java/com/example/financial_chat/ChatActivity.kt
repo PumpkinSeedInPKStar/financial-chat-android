@@ -11,6 +11,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.financial_chat.databinding.ActivityChat2Binding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 //import com.mongodb.client.MongoClients
 //import com.mongodb.client.MongoCollection
 import kotlinx.coroutines.CoroutineScope
@@ -42,6 +44,9 @@ class ChatActivity : AppCompatActivity(){
         super.onCreate(savedInstanceState)
         binding = ActivityChat2Binding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // sessionManager 초기화
+        sessionManager = SessionManager(this)
 
         // Firebase 초기화
         auth = FirebaseAuth.getInstance()
@@ -124,9 +129,13 @@ class ChatActivity : AppCompatActivity(){
     }
 
     private fun setupApiService() {
+        val gson = GsonBuilder()
+            .setLenient() // 느슨한 JSON 파싱 허용
+            .create()
+
         val retrofit = Retrofit.Builder()
             .baseUrl("http://10.0.2.2:11434/") // Ollama API의 기본 URL, localhost 대신 10.0.2.2 사용
-            .addConverterFactory(GsonConverterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
 
         apiService = retrofit.create(OllamaApiService::class.java)
@@ -153,10 +162,60 @@ class ChatActivity : AppCompatActivity(){
     private fun loadChatRoom(chatRoom: ChatRoom) {
         currentRoomId = chatRoom.roomId // 현재 채팅방 ID 업데이트
         title = "Chat Room: ${chatRoom.roomId}" // 현재 채팅방 표시
-        chatAdapter.updateMessages(chatRoom.messages) // 메시지 RecyclerView 업데이트
+        chatAdapter.updateMessage(chatRoom.messages)
+//        chatAdapter.updateMessages(chatRoom.messages) // 메시지 RecyclerView 업데이트
         binding.drawerLayout.closeDrawer(GravityCompat.START) // 사이드바 닫기
     }
 
+    private fun handleUserMessage(message: String, userId: String) {
+        if (currentRoomId == null) {
+            Toast.makeText(this, "채팅방을 선택해주세요.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val userMessage = ChatMessage("user", message, System.currentTimeMillis().toString())
+        chatAdapter.addMessage(userMessage)
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val responseBody = apiService.generateChatCompletion(
+                    ChatRequest("fc_gemma2", listOf(ChatContent("user", message)))
+                )
+                val responseStream = responseBody.byteStream().bufferedReader()
+
+                val botMessageBuilder = StringBuilder()
+                responseStream.useLines { lines ->
+                    lines.forEach { line ->
+                        if (line.isNotBlank()) {
+                            // JSON 파싱
+                            val partialResponse = Gson().fromJson(line, PartialChatResponse::class.java)
+                            val content = partialResponse.message.content
+
+                            withContext(Dispatchers.Main) {
+                                // 실시간으로 부분 응답 표시
+                                if (content.isNotEmpty()) {
+                                    botMessageBuilder.append(content)
+                                    val partialBotMessage = ChatMessage("bot", botMessageBuilder.toString(), System.currentTimeMillis().toString())
+                                    chatAdapter.updateLastBotMessage(partialBotMessage)
+                                }
+                            }
+
+                            // 응답 완료 시 처리
+                            if (partialResponse.done) {
+                                saveMessageToFirebase(currentRoomId!!, ChatMessage("bot", botMessageBuilder.toString(), System.currentTimeMillis().toString()))
+                            }
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@ChatActivity, "오류 발생: ${e.message}", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+    }
+
+    /* // 1st
     private fun handleUserMessage(message: String, userId: String) {
         if (currentRoomId == null) {
             Toast.makeText(this, "채팅방을 선택해주세요.", Toast.LENGTH_SHORT).show()
@@ -189,6 +248,7 @@ class ChatActivity : AppCompatActivity(){
             }
         }
     }
+     */
 
     // 채팅방 생성
     private suspend fun createDefaultChatRoom(userId: String) {
