@@ -17,6 +17,7 @@
             android:id="@+id/user_message"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:maxWidth="300dp"
             android:text=""
             android:fontFamily="@font/suit_medium"
             android:textColor="@color/font"

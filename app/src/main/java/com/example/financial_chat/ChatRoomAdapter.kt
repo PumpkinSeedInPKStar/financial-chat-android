@@ -24,7 +24,7 @@ class ChatRoomAdapter (
 
     override fun onBindViewHolder(holder: ChatRoomViewHolder, position: Int) {
         val chatRoom = chatRooms[position]
-        holder.chatRoomName.text = chatRoom.roomId // 채팅방 이름
+        holder.chatRoomName.text = chatRoom.roomName // 채팅방 이름
         holder.itemView.setOnClickListener {
             onClick(chatRoom)
         }
