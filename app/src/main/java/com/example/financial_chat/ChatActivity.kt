@@ -2,7 +2,6 @@ package com.example.financial_chat
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.Gravity
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
@@ -13,15 +12,12 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-//import com.mongodb.client.MongoClients
-//import com.mongodb.client.MongoCollection
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
-//import org.bson.Document
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.text.SimpleDateFormat
@@ -31,7 +27,6 @@ import java.util.Locale
 class ChatActivity : AppCompatActivity(){
     private lateinit var binding: ActivityChat2Binding
     private lateinit var chatAdapter: ChatAdapter
-//    private lateinit var chatModel: ChatModel
     private lateinit var chatRoomAdapter: ChatRoomAdapter
 
     private lateinit var sessionManager: SessionManager
@@ -64,16 +59,6 @@ class ChatActivity : AppCompatActivity(){
             finish()
             return
         }
-
-        /*
-        // ROOM_ID 가져오기
-        currentRoomId = intent.getStringExtra("ROOM_ID")
-        if (currentRoomId == null) {
-            Toast.makeText(this, "채팅방을 찾을 수 없습니다.", Toast.LENGTH_SHORT).show()
-            finish()
-            return
-        }
-         */
 
         // ROOM_ID 가져오기
         currentRoomId = intent.getStringExtra("ROOM_ID")
@@ -116,9 +101,6 @@ class ChatActivity : AppCompatActivity(){
         }
 
         setupApiService()
-
-        // Load chat rooms from MongoDB
-//        loadChatRooms(userId)
     }
 
     private fun setupUI(userId: String) {
@@ -227,6 +209,75 @@ class ChatActivity : AppCompatActivity(){
         val userMessage = ChatMessage("user", message, System.currentTimeMillis().toString())
         chatAdapter.addMessage(userMessage)
 
+        val toolsListDescription = """
+        {
+            "type": "function",
+            "function": {
+                "name": "calculate_goal_amount_saving",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "goal_amount": {"type": "float"},
+                        "months": {"type": "int"},
+                        "rate": {"type": "float"}
+                    }
+                }
+             }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "calculate_lump_sum_deposit",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "goal_amount": {"type": "float"},
+                        "months": {"type": "int"},
+                        "rate": {"type": "float"}
+                    }
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "calculate_monthly_saving",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "monthly_saving": {"type": "float"},
+                        "months": {"type": "int"},
+                        "rate": {"type": "float"}
+                    }
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "calculate_loan_interest",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "principal": {"type": "float"},
+                        "annual_rate": {"type": "float"},
+                        "months": {"type": "int"}
+                    }
+                }
+            }
+        }
+        """.trimIndent()
+
+        val instruction = """
+            Please analyze the User Question below. 
+    
+            - If it is a simple greeting or non-financial query, provide a brief response in Korean.
+            - If the User Question requires a financial calculation, return the function name and arguments using the Tools Information provided.
+            - If the question requires general financial advice, provide a detailed response in Korean appropriate to the User Question.
+
+            Always keep the response relevant and concise.
+        """.trimIndent()
+
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 // 유저 기본 정보 가져오기
@@ -237,8 +288,14 @@ class ChatActivity : AppCompatActivity(){
                 User Info:
                 $userInfo
                 
+                Tools Information:
+                $toolsListDescription
+                                
                 User Question:
                 $message
+                
+                Instruction:
+                Please analyze the User Question and provide a response. If calculation is needed, return the function name and arguments using the tools list provided.
             """.trimIndent()
 
                 // Firestore에 유저 메시지 저장
@@ -248,19 +305,43 @@ class ChatActivity : AppCompatActivity(){
                     ChatRequest("fc_gemma2", listOf(ChatContent("user", fullMessage)))
                 )
                 val responseStream = responseBody.byteStream().bufferedReader()
-
                 val botMessageBuilder = StringBuilder()
+
                 responseStream.useLines { lines ->
                     lines.forEach { line ->
                         if (line.isNotBlank()) {
                             // JSON 파싱
                             val partialResponse = Gson().fromJson(line, PartialChatResponse::class.java)
-                            val content = partialResponse.message.content
+//                            val content = partialResponse.message.content
+                            Log.d("PartialResponse", "Response: $partialResponse")
+
+                            // Function 호출 처리
+                            if (partialResponse.function != null) {
+                                Toast.makeText(this@ChatActivity, "함수 호출", Toast.LENGTH_LONG).show()
+                                val functionName = partialResponse.function.name
+                                val arguments = Gson().fromJson(partialResponse.function.arguments, Map::class.java)
+
+                                Log.d("FunctionCall", "Function Name: $functionName, Arguments: $arguments")
+
+                                if (functionName != null && arguments != null) {
+                                    val result = callFinancialFunction(functionName, arguments as Map<String, Any>)
+                                    val explanation = "The result for $functionName is $result."
+
+                                    withContext(Dispatchers.Main) {
+                                        val finalBotMessage = ChatMessage("bot", explanation, System.currentTimeMillis().toString())
+                                        chatAdapter.addMessage(finalBotMessage)
+                                        saveMessageToFirebase(currentRoomId!!, finalBotMessage)
+                                    }
+                                }
+
+                            }else {
+                                Log.d("PartialResponse", "No function call in response")
+                            }
 
                             withContext(Dispatchers.Main) {
                                 // 실시간으로 부분 응답 표시
-                                if (content.isNotEmpty()) {
-                                    botMessageBuilder.append(content)
+                                if (partialResponse.message.content.isNotEmpty()) {
+                                    botMessageBuilder.append(partialResponse.message.content)
                                     val partialBotMessage = ChatMessage("bot", botMessageBuilder.toString(), System.currentTimeMillis().toString())
                                     chatAdapter.updateLastBotMessage(partialBotMessage)
                                 }
@@ -300,7 +381,7 @@ class ChatActivity : AppCompatActivity(){
 
             // 예약 삭제 로직
             CoroutineScope(Dispatchers.IO).launch {
-                delay(120000)
+                delay(60000)
                 checkAndDeleteEmptyRoom(roomId)
             }
 
@@ -310,57 +391,6 @@ class ChatActivity : AppCompatActivity(){
             throw e
         }
     }
-
-    /* // 1st
-    private fun handleUserMessage(message: String, userId: String) {
-        if (currentRoomId == null) {
-            Toast.makeText(this, "채팅방을 선택해주세요.", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        val userMessage = ChatMessage("user", message, System.currentTimeMillis().toString())
-        chatAdapter.addMessage(userMessage)
-
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val response = apiService.generateChatCompletion(
-                    ChatRequest("fc_gemma2", listOf(ChatContent("user", message)))
-                )
-                val botMessage = ChatMessage("bot", response.message.content, System.currentTimeMillis().toString())
-
-                saveMessageToFirebase(currentRoomId ?: return@launch, userMessage)
-                saveMessageToFirebase(currentRoomId ?: return@launch, botMessage)
-
-//                saveMessageToFirebase(userMessage, userId)
-//                saveMessageToFirebase(botMessage, userId)
-
-                withContext(Dispatchers.Main) {
-                    chatAdapter.addMessage(botMessage)
-                }
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(this@ChatActivity, "오류 발생: ${e.message}", Toast.LENGTH_LONG).show()
-                }
-            }
-        }
-    }
-     */
-
-    /*
-    // 채팅방 생성 (1st)
-    private suspend fun createDefaultChatRoom(userId: String) {
-        val defaultRoom = mapOf(
-            "participants" to listOf(userId, "bot"),
-            "messages" to emptyList<Map<String, Any>>()
-        )
-        val roomId = firestore.collection("chatrooms").add(defaultRoom).await().id
-        currentRoomId = roomId
-        withContext(Dispatchers.Main) {
-            val newChatRoom = ChatRoom(roomId, listOf(userId, "bot"), emptyList())
-            chatRoomAdapter.addChatRoom(newChatRoom)
-        }
-    }
-     */
 
     private suspend fun createDefaultChatRoom(userId: String): String {
         return try {
@@ -393,37 +423,6 @@ class ChatActivity : AppCompatActivity(){
         }
     }
 
-
-    // 메시지 전송
-//    private fun sendMessage(message: String) {
-//        val newMessage = ChatMessage("user", message, System.currentTimeMillis().toString())
-//        chatAdapter.addMessage(newMessage) // 메시지 추가
-//
-//        // MongoDB에 메시지 저장 및 챗봇 응답 처리
-//        CoroutineScope(Dispatchers.IO).launch {
-//            currentRoomId?.let { roomId ->
-//                try {
-//                    // Firebase Firestore에 메시지 저장
-//                    saveMessageToFirebase(roomId, newMessage)
-//
-//                    // 챗봇 응답 추가
-//                    // val botReply = getBotReply(message)
-//
-//                    // Lite Interpreter 모델로 챗봇 응답 생성
-//                    val botReply = chatModel.predict(message)
-//                    val botMessage = ChatMessage("bot", botReply, System.currentTimeMillis().toString())
-//                    saveMessageToFirebase(roomId, botMessage)
-//
-//                    withContext(Dispatchers.Main) {
-//                        chatAdapter.addMessage(botMessage)
-//                    }
-//                } catch (e: Exception) {
-//                    e.printStackTrace()
-//                }
-//            }
-//        }
-//    }
-
     private suspend fun saveMessageToFirebase(roomId: String, message: ChatMessage) {
         val messageData = mapOf(
             "sender" to message.sender,
@@ -438,25 +437,6 @@ class ChatActivity : AppCompatActivity(){
             .await()
     }
 
-    /*private suspend fun fetchChatRooms(roomId: String): List<ChatRoom> {
-        return try {
-            val chatRooms = db.collection("chatrooms")
-                .whereArrayContains("participants", roomId)
-                .get()
-                .await()
-                .documents.map { document ->
-                    ChatRoom(
-                        roomId = document.id,
-                        participants = document["participants"] as List<String>,
-                        messages = fetchMessagesFromFirebase(document.id)
-                    )
-                }
-            chatRooms
-        } catch (e: Exception) {
-            e.printStackTrace()
-            emptyList()
-        }
-    }*/
     private suspend fun fetchChatRooms(userId: String): List<ChatRoom> {
         return try {
             db.collection("chatrooms")
@@ -513,16 +493,16 @@ class ChatActivity : AppCompatActivity(){
         }
     }
 
-    private fun saveMessageToFirebase(message: ChatMessage, userId: String) {
-        val roomRef = firestore.collection("chatrooms").document(currentRoomId ?: return)
-        roomRef.collection("messages").add(message)
-    }
-
     private fun loadChatRoomMessages() {
         CoroutineScope(Dispatchers.IO).launch {
             val messages = fetchMessagesFromFirebase(currentRoomId!!)
             withContext(Dispatchers.Main) {
                 chatAdapter.updateMessage(messages)
+
+                // 레이아웃 변경이 완료된 후 스크롤을 마지막 항목으로 이동
+                binding.chatRecyclerView.post {
+                    binding.chatRecyclerView.scrollToPosition(messages.size - 1)
+                }
             }
         }
     }
@@ -549,4 +529,43 @@ class ChatActivity : AppCompatActivity(){
         }
     }
 
+    fun callFinancialFunction(functionName: String, params: Map<String, Any>): Any {
+        return try {
+            when (functionName) {
+            "calculate_goal_amount_saving" -> {
+                val calculator = Saving(params["rate"] as Float)
+                calculator.calculateGoalAmount(
+                    goalAmount = params["goal_amount"] as Float,
+                    months = params["months"] as Int
+                )
+            }
+            "calculate_lump_sum_deposit" -> {
+                val calculator = Deposit(params["rate"] as Float)
+                calculator.calculateLumpSum(
+                    goalAmount = params["goal_amount"] as Float,
+                    months = params["months"] as Int
+                )
+            }
+            "calculate_monthly_saving" -> {
+                val calculator = Saving(params["rate"] as Float)
+                calculator.calculateMonthlySaving(
+                    monthlySaving = params["monthly_saving"] as Float,
+                    months = params["months"] as Int
+                )
+            }
+            "calculate_loan_interest" -> {
+                val calculator = LoanInterest(
+                    principal = params["principal"] as Float,
+                    annualRate = params["annual_rate"] as Float,
+                    months = params["months"] as Int
+                )
+                calculator.calculate()
+            }
+            else -> throw IllegalArgumentException("Unknown function name: $functionName")
+        } } catch (e: Exception) {
+            Log.e("callFinancialFunction", "Error in function execution: ${e.message}", e)
+            "Error in function execution: ${e.message}"
+        }
+    }
 }
+

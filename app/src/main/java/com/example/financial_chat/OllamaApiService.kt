@@ -10,7 +10,6 @@ interface OllamaApiService {
     @Streaming
     @POST("api/chat")
     suspend fun generateChatCompletion(@Body request: ChatRequest): ResponseBody
-//    suspend fun generateChatCompletion(@Body request: ChatRequest): ChatResponse
 }
 
 data class ChatRequest(
@@ -23,27 +22,19 @@ data class ChatContent(
     val content: String
 )
 
-/*
-data class ChatResponse(
-    @SerializedName("model") val model: String,
-    @SerializedName("output") val message: ChatMessageResponse
-//    val model: String,
-//    val message: ChatMessageResponse
-)
-
-data class ChatMessageResponse(
-    val role: String,
-    val content: String
-)
-*/
-
 data class PartialChatResponse(
     val model: String,
-    val message: ChatMessageResponse,
+    val message: ChatMessageResponse, // 일반 텍스트 응답 >> response
+    val function: FunctionDetails?, // 함수 호출 정보
     val done: Boolean
 )
 
 data class ChatMessageResponse(
     val role: String,
     val content: String
+)
+
+data class FunctionDetails(
+    val name: String,             // 호출할 함수 이름
+    val arguments: String         // 함수에 전달할 JSON 형식의 인수
 )
