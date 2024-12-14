@@ -1,7 +1,240 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:paddingTop="20dp"
+    android:paddingBottom="20dp"
+    android:id="@+id/signup"
+    tools:context=".SignupActivity">
 
-</LinearLayout>
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:layout_marginHorizontal="20dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/con_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintTop_toTopOf="@id/signup">
+        
+        <ImageView
+            android:id="@+id/profile_img"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:layout_marginTop="60dp"
+            android:background="@drawable/circle_purp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:contentDescription="프로필 이미지"
+            />
+
+        <EditText
+            android:id="@+id/signup_name"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="50dp"
+            android:layout_marginStart="6dp"
+            android:layout_marginEnd="6dp"
+            android:hint="Name"
+            android:textSize="16dp"
+            android:fontFamily="@font/suit_semibold"
+            android:textColor="@color/font"
+            android:layout_gravity="center"
+            android:inputType="text"
+            android:imeOptions="actionNext"
+            tools:ignore="OverlappingClickableElements"
+            app:layout_constraintEnd_toEndOf="@id/profile_img"
+            app:layout_constraintStart_toStartOf="@id/profile_img"
+            app:layout_constraintTop_toBottomOf="@id/profile_img"/>
+
+        <EditText
+            android:id="@+id/signup_email"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginStart="6dp"
+            android:layout_marginEnd="6dp"
+            android:hint="Email"
+            android:textSize="16dp"
+            android:fontFamily="@font/suit_semibold"
+            android:textColor="@color/font"
+            android:layout_gravity="center"
+            android:inputType="text"
+            android:imeOptions="actionNext"
+            app:layout_constraintEnd_toEndOf="@id/signup_name"
+            app:layout_constraintStart_toStartOf="@id/signup_name"
+            app:layout_constraintTop_toBottomOf="@id/signup_name"/>
+
+        <EditText
+            android:id="@+id/signup_id"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginStart="6dp"
+            android:layout_marginEnd="6dp"
+            android:hint="ID"
+            android:textSize="16dp"
+            android:fontFamily="@font/suit_semibold"
+            android:textColor="@color/font"
+            android:layout_gravity="center"
+            android:inputType="text"
+            android:imeOptions="actionNext"
+            app:layout_constraintEnd_toEndOf="@id/signup_email"
+            app:layout_constraintStart_toStartOf="@id/signup_email"
+            app:layout_constraintTop_toBottomOf="@id/signup_email"/>
+        
+        <ImageView
+            android:id="@+id/signup_id_check"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:background="@drawable/circle_gray3"
+            app:layout_constraintStart_toStartOf="@id/signup_id"
+            app:layout_constraintTop_toBottomOf="@id/signup_id"
+            />
+        <TextView
+            android:id="@+id/signup_id_check_txt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:text="ID duplication check"
+            android:textSize="16dp"
+            android:fontFamily="@font/suit_semibold"
+            android:textColor="@color/gray4"
+            android:layout_gravity="center"
+            android:inputType="text"
+            android:imeOptions="actionNext"
+            app:layout_constraintStart_toEndOf="@id/signup_id_check"
+            app:layout_constraintTop_toTopOf="@id/signup_id_check"
+            app:layout_constraintBottom_toBottomOf="@id/signup_id_check"/>
+
+        <EditText
+            android:id="@+id/signup_pw"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginStart="6dp"
+            android:layout_marginEnd="6dp"
+            android:hint="Password"
+            android:textSize="16dp"
+            android:fontFamily="@font/suit_semibold"
+            android:textColor="@color/font"
+            android:layout_gravity="center"
+            android:inputType="text"
+            android:imeOptions="actionNext"
+            app:layout_constraintEnd_toEndOf="@id/signup_id_check_txt"
+            app:layout_constraintStart_toStartOf="@id/signup_id_check_txt"
+            app:layout_constraintTop_toBottomOf="@id/signup_id_check_txt"/>
+
+        <EditText
+            android:id="@+id/signup_age"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginStart="6dp"
+            android:layout_marginEnd="6dp"
+            android:hint="나이"
+            android:textSize="16dp"
+            android:fontFamily="@font/suit_semibold"
+            android:textColor="@color/font"
+            android:layout_gravity="center"
+            android:inputType="text"
+            android:imeOptions="actionNext"
+            app:layout_constraintEnd_toEndOf="@id/signup_pw"
+            app:layout_constraintStart_toStartOf="@id/signup_pw"
+            app:layout_constraintTop_toBottomOf="@id/signup_pw"/>
+
+        <EditText
+            android:id="@+id/signup_job"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginStart="6dp"
+            android:layout_marginEnd="6dp"
+            android:hint="직업"
+            android:textSize="16dp"
+            android:fontFamily="@font/suit_semibold"
+            android:textColor="@color/font"
+            android:layout_gravity="center"
+            android:inputType="text"
+            android:imeOptions="actionNext"
+            app:layout_constraintEnd_toEndOf="@id/signup_age"
+            app:layout_constraintStart_toStartOf="@id/signup_age"
+            app:layout_constraintTop_toBottomOf="@id/signup_age"/>
+
+        <EditText
+            android:id="@+id/signup_interest"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginStart="6dp"
+            android:layout_marginEnd="6dp"
+            android:hint="관심사"
+            android:textSize="16dp"
+            android:fontFamily="@font/suit_semibold"
+            android:textColor="@color/font"
+            android:layout_gravity="center"
+            android:inputType="text"
+            android:imeOptions="actionNext"
+            app:layout_constraintEnd_toEndOf="@id/signup_job"
+            app:layout_constraintStart_toStartOf="@id/signup_job"
+            app:layout_constraintTop_toBottomOf="@id/signup_job"/>
+
+        <EditText
+            android:id="@+id/signup_goal"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginStart="6dp"
+            android:layout_marginEnd="6dp"
+            android:hint="목표"
+            android:textSize="16dp"
+            android:fontFamily="@font/suit_semibold"
+            android:textColor="@color/font"
+            android:layout_gravity="center"
+            android:inputType="text"
+            android:imeOptions="actionNext"
+            app:layout_constraintEnd_toEndOf="@id/signup_interest"
+            app:layout_constraintStart_toStartOf="@id/signup_interest"
+            app:layout_constraintTop_toBottomOf="@id/signup_interest"/>
+
+        <ImageButton
+            android:id="@+id/btn_join_us"
+            android:layout_width="match_parent"
+            android:layout_height="47dp"
+            android:layout_marginTop="60dp"
+            android:layout_marginEnd="6dp"
+            android:layout_marginStart="6dp"
+            android:background="@drawable/box_purp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/signup_goal"
+            android:contentDescription="로그인 버튼"
+            tools:ignore="TouchTargetSize"/>
+        <TextView
+            android:id="@+id/txt_join_us"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/suit_bold"
+            android:text="Join Us"
+            android:textColor="@color/white"
+            android:textSize="24sp"
+            app:layout_constraintStart_toStartOf="@id/btn_join_us"
+            app:layout_constraintEnd_toEndOf="@id/btn_join_us"
+            app:layout_constraintTop_toTopOf="@id/btn_join_us"
+            app:layout_constraintBottom_toBottomOf="@id/btn_join_us"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.core.widget.NestedScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>

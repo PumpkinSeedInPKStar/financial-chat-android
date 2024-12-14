@@ -12,9 +12,13 @@
     <color name="gray1">#F3F2F7</color>
     <color name="gray2">#F1F1F1</color>
     <color name="gray3">#8F8E91</color>
-    <color name="gray5">#787878</color>
+    <color name="gray4">#787878</color>
+    <color name="gray5">#EDEBF1</color>
+    <color name="gray6">#B5B5B5</color>
     <color name="purp1">#BEADFB</color>
     <color name="purp2">#716795</color>
     <color name="purp3">#8774CB</color>
     <color name="purp4">#6F52D4</color>
+    <color name="purp5">#4F486A</color>
+    <color name="purp6">#DDD3FF</color>
 </resources>
