@@ -209,6 +209,33 @@ class ChatActivity : AppCompatActivity(){
         val userMessage = ChatMessage("user", message, System.currentTimeMillis().toString())
         chatAdapter.addMessage(userMessage)
 
+        val functions = """
+def calculate_lump_sum(goal_amount: float, rate: float, months: int) -> float:
+    # Calculate the lump sum deposit required to reach a goal amount with a given interest rate over a certain number of months.
+    monthly_rate = rate / 100 / 12
+    return goal_amount / ((1 + monthly_rate) ** months)
+     
+def calculate_monthly_saving(monthly_saving: float, rate: float, months: int) -> float:
+    # Calculate the total savings when saving a fixed amount monthly at a given interest rate over a certain number of months.
+    monthly_rate = rate / 100 / 12
+    return monthly_saving * ((1 + monthly_rate) ** months - 1) / monthly_rate
+
+def calculate_goal_amount(goal_amount: float, rate: float, months: int) -> float:
+    # Calculate the goal amount to be achieved when saving monthly at a given interest rate.
+    monthly_rate = rate / 100 / 12
+    return goal_amount * monthly_rate / ((1 + monthly_rate) ** months - 1)
+
+def calculate_loan_interest(principal: float, annual_rate: float, months: int) -> dict:
+    # Calculate loan interest details including monthly payment, total payment, and interest payment.
+    monthly_rate = annual_rate / 100 / 12
+    monthly_payment = principal * monthly_rate * (1 + monthly_rate) ** months / ((1 + monthly_rate) ** months - 1)
+    total_payment = monthly_payment * months
+    interest_payment = total_payment - principal
+    return {
+        "monthly_payment": round(monthly_payment, 2),
+        "total_payment": round(total_payment, 2),
+        "interest_payment": round(interest_payment, 2),
+    }"""
         val toolsListDescription = """
         {
             "type": "function",
@@ -272,7 +299,7 @@ class ChatActivity : AppCompatActivity(){
             Please analyze the User Question below. 
     
             - If it is a simple greeting or non-financial query, provide a brief response in Korean.
-            - If the User Question requires a financial calculation, return the function name and arguments using the Tools Information provided.
+            - If the User Question requires a financial calculation, return the function name and arguments using the Tools Information provided. And provide calculation result in Korean. 
             - If the question requires general financial advice, provide a detailed response in Korean appropriate to the User Question.
 
             Always keep the response relevant and concise.
@@ -290,12 +317,32 @@ class ChatActivity : AppCompatActivity(){
                 
                 Tools Information:
                 $toolsListDescription
+                $functions
                                 
                 User Question:
                 $message
                 
+                Function Example:
+                예시1 질문: 목표 금액 500만원을 12개월 동안 모으고 싶습니다. 매월 얼마를 저축해야 하나요?
+                예시1 응답: 매월 40~50만원을 저축하고, 이자율이 높은 금융상품에 투자하는 것이 좋습니다. 
+
+                예시2 질문: 월 50만원을 12개월 동안 연 이자율이 5%인 예금 상품에 가입하면, 얼마를 모을 수 있나요?
+                예시2 응답: 630만원 입니다. 
+
+                예시3 질문: 목표 금액 500만원을 연 이자율이 5%인 상품에 가입하면, 12개월동안 얼마를 저축해야 할까요?
+                예시3 응답: 12개월 동안 약 40만원입니다.
+                
+                예시4 질문: 목표 금액 1500만원을 12개월 동안 모으고 싶습니다. 매월 얼마를 저축해야 하나요?
+                예시4 응답: 매월 125만원을 저축하고, 이자율이 높은 금융상품에 투자하는 것이 좋습니다. 
+
+                예시5 질문: 월 120만원을 24개월 동안 연 이자율이 3%인 예금 상품에 가입하면, 얼마를 모을 수 있나요?
+                예시5 응답: 약 3000만원 입니다. 
+
+                예시6 질문: 목표 금액 800만원을 연 이자율이 3%인 상품에 가입하면, 12개월동안 얼마를 저축해야 할까요?
+                예시6 응답: 12개월 동안 약 65만원입니다.
+                
                 Instruction:
-                Please analyze the User Question and provide a response. If calculation is needed, return the function name and arguments using the tools list provided.
+                Please analyze the User Question and provide a response in Korean. If calculation is needed, return the function name and arguments using the tools list provided and calculate a function result in Korean.
             """.trimIndent()
 
                 // Firestore에 유저 메시지 저장
