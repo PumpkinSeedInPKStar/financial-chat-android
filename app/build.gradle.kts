@@ -91,7 +91,8 @@ dependencies {
 
     // Firebase
     implementation(platform("com.google.firebase:firebase-bom:33.6.0"))
-    implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-analytics:21.2.0")
+    implementation("com.google.firebase:firebase-messaging:23.1.0")
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore.ktx)
 
